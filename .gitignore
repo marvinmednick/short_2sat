@@ -13,8 +13,8 @@ Cargo.lock
 *.swp
 
 # Local link to executable
-2sat
-2sat_rel
+sat2
+sat2_rel
 
 # files for saving output for review
 output*

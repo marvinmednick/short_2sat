@@ -32,7 +32,7 @@ fn main() {
     env_logger::init();
 
     set_log_dir(&"log");
-    fs::remove_dir_all("log");
+    fs::remove_dir_all("log").ok();
 
     let cmd_line = CommandArgs::parse();
     debug!("The Command Line, {:?}!",cmd_line);
@@ -49,7 +49,7 @@ fn main() {
 
 
 	let mut graph = DirectedGraph::new();
-    read_constraints(&mut file, &mut graph);
+    let num_variables = read_constraints(&mut file, &mut graph);
 
     if cmd_line.show_graph {
         println!("DirGraph");
@@ -72,36 +72,24 @@ fn main() {
         let mut scc_sizes = k.get_scc_sizes();
         scc_sizes.sort_by(|a, b| b.cmp(a));
         info!("K sizes {:?}",scc_sizes);
-        let k_finish_order = k.get_finish_order();
 
-        let mut output_vec = &scc_sizes;
-           
-        if cmd_line.counts {
-            let mut count = 0;
-            for search_count in output_vec {
-                if count > 0 {
-                    print!(",");
-                }
-                count += 1;
-                print!("{}",search_count);
-                if count >= 5 {
-                    break;
-                }
+        let mut constraint_met = true;
+        for i in 0..num_variables {
+            let vertex_id = (i+1) as isize;
+            let not_vertex_id = 0-vertex_id;
+            if k.get_group(vertex_id) == k.get_group(not_vertex_id) {
+                constraint_met = false;
+
+                break;
             }
-            while count < 5 {
-                if count > 0 {
-                    print!(",");
-                }
-                count += 1;
-                print!("0");
-            }
-            println!();
+        }
+        if constraint_met {
+            println!("1");
         }
         else {
-            let disp_count = std::cmp::min(10,output_vec.len());
-            println!("\n {} Top Counts {:?} entries",handle.name().unwrap(),&output_vec[0..disp_count]);
+            println!("0");
         }
-       
+
 
 	}).unwrap(); 
 	child.join().unwrap();

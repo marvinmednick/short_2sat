@@ -3,17 +3,16 @@ use std::collections::{HashMap};
 use crate::dirgraph::DirectedGraph;
 use std::io::{stdout,Write};
 
-#[macro_use]
 use crate::log_files::LogFile;
 
 #[derive(Debug,Clone)]
 pub struct Kosaraju<'a> {
     graph:  &'a DirectedGraph,
     explored:  HashMap<isize,bool>,
-    // processed:  HashMap<isize,bool>,
     finished:  HashMap<isize,bool>,
 	finished_order:  Vec::<isize>,
 	start_search:  HashMap::<isize,Vec::<isize>>,
+    vertex_scc_map: HashMap::<isize,isize>,
 	top_search_cnts:  HashMap::<isize, usize>,
     use_iter: bool,
 }
@@ -29,6 +28,7 @@ impl<'a> Kosaraju<'a> {
             finished:  HashMap::<isize,bool>::new(),
             finished_order:  Vec::<isize>::new(),
             start_search : HashMap::<isize,Vec::<isize>>::new(),
+            vertex_scc_map: HashMap::<isize,isize>::new(),
             top_search_cnts : HashMap::<isize,usize>::new(),
             use_iter,
 		}
@@ -37,11 +37,6 @@ impl<'a> Kosaraju<'a> {
     pub fn is_explored(&self, vertex_id: isize) -> bool {
         self.explored.contains_key(&vertex_id) 
     }
-/*
-    pub fn is_processed(&self, vertex_id: isize) -> bool {
-        self.processed.contains_key(&vertex_id) 
-    }
-    */
 
     pub fn mark_explored(&mut self, vertex_id: &isize) {
         self.explored.insert(*vertex_id,true); 
@@ -51,43 +46,26 @@ impl<'a> Kosaraju<'a> {
         self.finished.contains_key(&vertex_id) 
     }
 
-/*
-    pub fn mark_processed(&mut self, vertex_id: &isize)  {
-        self.processed.insert(*vertex_id,true); 
-        trace!("Adding {} - processed now {:?}",vertex_id,self.processed);
-    }
-*/
     pub fn mark_finished(&mut self, vertex_id: &isize)  {
         self.finished.insert(*vertex_id,true); 
         trace!("Adding {} - finsihed now {:?}",vertex_id,self.finished);
     }
 
+    pub fn set_group(&mut self, vertex_id: isize, group: isize)  {
+
+        self.vertex_scc_map.insert(vertex_id,group); 
+    }
+
+    pub fn get_group(&self, vertex_id: isize) -> Option<&isize> {
+
+        self.vertex_scc_map.get(&vertex_id) 
+    }
+
 
 
 	pub fn add_search_entry(&mut self, vertex: isize, count: usize) {
-
             // keep track of the current counts
 			self.top_search_cnts.insert(vertex,count);
-        /*
-			let mut removed = None;
-
-            // but only keep the top 10?
-			//if self.top_search_cnts.len() > 100 {
-			if count > 1 {
-				let top_search_iter = self.top_search_cnts.iter();
-				let mut top_search_count_vec : Vec::<(isize, isize)> = 
-                    top_search_iter.map(|(k,v)| (*k, *v)).collect();
-				top_search_count_vec.sort_by(|a, b| b.1.cmp(&a.1));
-				removed = top_search_count_vec.pop();
-			}
-
-            // and delete the item removed
-			if let Some(entry) = removed {
-				self.top_search_cnts.remove(&entry.0);
-				
-			}
-        */
-			
 	}
 
     /// Perform the next level of the Depth First Search on the outgoing edges
@@ -106,6 +84,7 @@ impl<'a> Kosaraju<'a> {
         start_group.push(vertex_id);
         let new_len = start_group.len().clone();
         self.add_search_entry(start_vertex,new_len);
+        self.set_group(vertex_id,start_vertex);
         trace!("Added vertex {} to list {} len now {}",vertex_id,start_vertex,new_len);
 
 
@@ -182,7 +161,7 @@ impl<'a> Kosaraju<'a> {
             // get a copy the curent vertex from the top of the stack
             let last_index = dfs_stack.len() - 1;
 
-            let mut cur_vertex = dfs_stack[last_index];
+            let cur_vertex = dfs_stack[last_index];
             // trace!("Cur vertex is now {}",cur_vertex);
             // trace!("Explored:  {:?}",self.explored);
             // trace!("Processed:  {:?}",self.processed);
@@ -353,7 +332,7 @@ impl<'a> Kosaraju<'a> {
                 }
             }
             else {
-                log_writeln!(single_scc_file,"{}",group_id);
+                log_writeln!(single_scc_file,"{}",group_id); 
             }
         }
         

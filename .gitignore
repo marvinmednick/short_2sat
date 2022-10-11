@@ -22,3 +22,5 @@ output*
 # links to test cases
 *tcs
 
+# log files created by the program
+log

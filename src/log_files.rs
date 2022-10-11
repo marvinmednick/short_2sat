@@ -30,7 +30,7 @@ impl LogFile {
 
         let mut log_dir_name = get_log_dir();
 
-        let mut log_file = Path::new(&log_file_name);
+        let log_file = Path::new(&log_file_name);
         let mut full_path = PathBuf::from(&log_dir_name).join(log_file_name);
 
         if log_file.is_absolute() || log_file.starts_with("./") {
@@ -41,7 +41,7 @@ impl LogFile {
 
         if !log_dir.exists() {
             info!("Creating log dir {}",log_dir_name);
-            fs::create_dir_all(&log_dir_name);
+            fs::create_dir_all(&log_dir_name).unwrap();
         }
         else if !log_dir.is_dir() {
             error!("Log directory {} exists, but is not a directory",log_dir_name);
@@ -72,6 +72,8 @@ impl LogFile {
 #[macro_export]
 macro_rules! log_writeln {
     ($logfile:expr, $fmt:expr $(, $($arg:tt)*)?) => {
-        writeln!($logfile.file(), $fmt, $($($arg)*)?);
-    };
+        writeln!($logfile.file(), 
+                 $fmt, 
+                 $($($arg)*)?).unwrap();
+    }
 }

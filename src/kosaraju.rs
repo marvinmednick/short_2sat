@@ -283,7 +283,7 @@ impl<'a> Kosaraju<'a> {
     }
 
     pub fn get_scc_sizes(&self) -> Vec<usize> {
-        let sizes = self.top_search_cnts.iter().map(|(k,v)| *v).collect();
+        let sizes = self.top_search_cnts.iter().map(|(_k,v)| *v).collect();
         debug!("getscc top search cnts {:?} sizes {:?}",self.top_search_cnts, sizes);
         sizes
     }
@@ -300,7 +300,7 @@ impl<'a> Kosaraju<'a> {
 
     pub fn get_top_scc_groups(&self) -> HashMap<isize,Vec<isize>> {
         let mut result = HashMap::<isize,Vec<isize>>::new();
-        for (group,count) in &self.top_search_cnts {
+        for (group,_count) in &self.top_search_cnts {
             result.insert(*group,self.get_scc_group(*group));
         }
         result

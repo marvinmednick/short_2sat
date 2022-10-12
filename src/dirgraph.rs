@@ -485,7 +485,7 @@ impl DirectedGraph {
 mod tests {
     use crate::dirgraph::DirectedGraph;
     use crate::graphbuilder::GraphBuilder;
-    use log::{  info, error, debug, warn, trace };
+    use log::{  info };
 
 
     #[test]

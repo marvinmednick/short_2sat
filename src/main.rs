@@ -63,7 +63,7 @@ fn main() {
 
 	   // code to be executed in thread
 
-        let handle = thread::current();
+        let _handle = thread::current();
 
         let mut k = Kosaraju::new(&mut graph,true);
         k.find_scc();
